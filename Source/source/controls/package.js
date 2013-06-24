@@ -1,0 +1,12 @@
+enyo.depends(
+	"Control.css",
+	"Body.js",
+	"Footer.js",
+	"Header.js",
+	"BackButton.js",
+	"FloatingLayer.js",
+	"Spinner.js",
+	"Scrim.js",
+	"Alert.js",
+	"Toast.js"
+);

@@ -1,0 +1,109 @@
+.group-header {
+	padding: 5px;
+}
+
+.group-content {
+	padding: 5px;
+}
+
+.thumbnail{
+	max-height: 80px;
+	max-width: 80px;
+}
+.header{
+	line-height: 32px;
+	margin-top: 5px;
+	display: inline-table;
+}
+.news-title{
+	font-size: 16px;
+	font-weight: bold;
+	display: block;
+	margin: .6em 0;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.video-title{
+	float: left;
+	line-height: 32PX;
+}
+.news-detail{
+	font-size: 12px;
+	font-weight: normal;
+	display: block;
+	margin: -.5em 0 .6em;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap
+}
+.news-desc{
+	width: 65%;
+	padding-left: 10px;
+}
+.list-item {
+	height: 80px !important;
+	background-color: white;
+	color: black;
+	padding: 5px 0px 5px 0px;
+	border-bottom: 1px solid silver;
+}
+
+.item-arrow{
+	margin: 10px 15px 2px 0px;
+	width: 24px;
+	height: 24px !important;
+	position: absolute;
+	right: 0;
+	top: 28px
+}
+
+.back-img{
+	float: left;
+}
+
+.refresh-img{
+	float: right;
+}
+
+.detail-item{
+	margin: 0px !important;
+	padding: 10px;
+	border-bottom: 1px solid silver;
+}
+
+.detail-padding{
+	margin-bottom: 10px;
+}
+
+.detail-content{
+	font-size: 12px;
+}
+
+.page-turn-animation{
+	-webkit-transition: 0.5s;
+}
+
+.download-img{
+	width: 32px;
+	height: 32px !important;
+	margin: 0px 10px;
+}
+
+.offline-button{
+	font-size: 20px;
+	float: right;
+	margin-top: 5px;
+}
+
+.download-part{
+	font-size: 15px;
+	color: gray;
+	float: right;
+}
+
+.download-percentage{
+	color: rgb(102,164,229);
+	font-size: 15px;
+	float: right;
+}

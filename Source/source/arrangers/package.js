@@ -1,0 +1,9 @@
+enyo.depends(
+	"MoreArrangers.css",
+	"BoxTurnArranger.js",
+	"HFlipArranger.js",
+	"PageSpinArranger.js",
+	"PageTurnArranger.js",
+	"PushPopArranger.js",
+	"SladeArranger.js"
+);

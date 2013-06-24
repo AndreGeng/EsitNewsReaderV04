@@ -1,0 +1,68 @@
+    {
+        "messages":
+        [
+            {
+                "id": 1,
+                "imageUrl":"/sdcard/movie/1.jpg",
+                "subject":"Iraq launches a major step in energy supply and the world’s largest flare reduction project",
+                "contents":"South Gas Company, Shell and Mitsubishi today officially announced the commencement of operations of Basrah Gas Company, which will be the largest gas project in Iraq’s history and the world’s largest flares reduction project.",
+                "audio": "http://15.185.115.204/mobile/media/sample.mp3",
+                "video": "/sdcard/movie/Dangerous.mp4",
+                "publishauthor":"ke-jun.xu@hp.com",
+                "publishdate": "03/16/2013"
+            },
+            {
+                "id": 2,
+                "imageUrl":"/sdcard/movie/2.jpg",
+                "subject":"Diamond miner Alrosa mulls over 14% stake sale to raise $2bn",
+                "contents":"CRN reports that HP is developing AppSystems prepackaged appliances, which are based on HP’s ProLiant DL980 server and integrate SAP’s HANA in-memory database with SAP’s Business Suite ERP applications. The 1-TB edition is currently available, while the 2-TB and 4-TB versions are expected to ship soon. HP is also offering services to help companies deploy SAP’s HANA and Business Suite software through HP Enterprise Cloud Services.",
+                "audio": "http://15.185.115.204/mobile/media/hair.mp3",
+                "videoPoster":"/sdcard/movie/esl.png",
+                "video": "/sdcard/movie/Dangerous.mp4",
+                "publishauthor":"foo.xu@hp.com",
+                "publishdate": "03/15/2013"
+            },
+            {
+                "id": 3,
+                "imageUrl":"/sdcard/movie/3.jpg",
+                "subject":"HP's Whitman seen as stabilizing presence",
+                "contents":"TheStreet writes that HP’s Meg Whitman appears to have brought stability to the company. The outlet also argues that former CEO Mark Hurd’s departure represents HP’s “most egregious mistake,” citing HP’s stock performance before, during and after his tenure",
+                "audio": "http://15.185.115.204/mobile/media/sample.mp3",
+                "video": "/sdcard/movie/Mahesh.mp4",
+                "publishauthor":"ke-jun.xu@hp.com",
+                "publishdate": "03/16/2013"
+            },
+            {
+                "id": 4,
+                "imageUrl":"/sdcard/movie/4.jpg",
+                "subject":"HP's Mayer talks datacenter networking, introduces SDN products at Interop",
+                "contents":"PC Magazine highlights HP’s Bethany Mayer’s keynote from Interop, which emphasized how HP’s HSR 6800 router and FlexFabric switches can improve data center networking. The outlet notes that HP has five SDN-based applications, which include support for a virtual cloud network, sentinel security, load balancing, WAN bursting and unified communications for Microsoft Lync",
+                "audio": "http://15.185.115.204/mobile/media/hair.mp3",
+                "videoPoster":"/sdcard/movie/esl.png",
+                "video": "/sdcard/movie/Mahesh_mobile_s.m4v",
+                "publishauthor":"foo.xu@hp.com",
+                "publishdate": "03/15/2013"
+            },
+            {
+                "id": 5,
+                "imageUrl":"/sdcard/movie/5.jpg",
+                "subject":"HP, SAP work together to move customers to HANA",
+                "contents":"CRN reports that HP is developing AppSystems prepackaged appliances, which are based on HP’s ProLiant DL980 server and integrate SAP’s HANA in-memory database with SAP’s Business Suite ERP applications. The 1-TB edition is currently available, while the 2-TB and 4-TB versions are expected to ship soon. HP is also offering services to help companies deploy SAP’s HANA and Business Suite software through HP Enterprise Cloud Services.",
+                "audio": "http://15.185.115.204/mobile/media/sample.mp3",
+                "video": "/sdcard/movie/Mahesh_mobile_s.mp4",
+                "publishauthor":"ke-jun.xu@hp.com",
+                "publishdate": "03/16/2013"
+            },
+            {
+                "id": 6,
+                "imageUrl":"/sdcard/movie/5.jpg",
+                "subject":"HP, SAP work together to move customers to HANA",
+                "contents":"CRN reports that HP is developing AppSystems prepackaged appliances, which are based on HP’s ProLiant DL980 server and integrate SAP’s HANA in-memory database with SAP’s Business Suite ERP applications. The 1-TB edition is currently available, while the 2-TB and 4-TB versions are expected to ship soon. HP is also offering services to help companies deploy SAP’s HANA and Business Suite software through HP Enterprise Cloud Services.",
+                "audio": "http://15.185.115.204/mobile/media/sample.mp3",
+                "video": "/sdcard/movie/windy1.mp4",
+                "publishauthor":"ke-jun.xu@hp.com",
+                "publishdate": "03/16/2013"
+            }
+        
+        ]
+    }
