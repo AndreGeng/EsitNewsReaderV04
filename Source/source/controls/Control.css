@@ -11,6 +11,10 @@
 	min-height:100px;
 	background-color:#CDCDCD;
 }
+.controls-header{
+	background-image: linear-gradient( #3c3c3c,#111 );
+	background-image: -webkit-linear-gradient( #3c3c3c,#111 );
+}
 .controls-alert-message {
 	margin: 10px 0px 10px 0px; 
 	color: black; 

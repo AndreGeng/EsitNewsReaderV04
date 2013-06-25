@@ -43,7 +43,8 @@
 }
 .list-item {
 	height: 80px !important;
-	background-color: white;
+	background-image: linear-gradient(#fff,#f1f1f1);
+	background-image: -webkit-linear-gradient(#fff,#f1f1f1);
 	color: black;
 	padding: 5px 0px 5px 0px;
 	border-bottom: 1px solid silver;
@@ -94,6 +95,9 @@
 	font-size: 20px;
 	float: right;
 	margin-top: 5px;
+	background-image: linear-gradient( #3c3c3c,#111 );
+	background-image: -webkit-linear-gradient( #3c3c3c,#111 );
+	border-radius: 10px
 }
 
 .download-part{

@@ -49,12 +49,12 @@ enyo.kind({
     downloadTapped: function(){
 
         var offlineData = {};
-        offlineData.src = this.data.video;
+        offlineData.src = this.data.videoFile;
         offlineData.progress = 0;
-        var uri = encodeURI(this.data.video);
+        var uri = encodeURI(this.data.videoFile);
         offlineData.fileName = uri.substr(uri.lastIndexOf("/")+1);
         offlineData.filePath = "/mnt/sdcard/ES_News" + uri.substr(uri.lastIndexOf("/"));
-        Utility.showToast(offlineData.fileName+" has been added to offline list.");
+        Utility.showToast("Video has been added to offline list.");
         GlobalVar.offlinelist.push(offlineData);
         var curIndex = GlobalVar.offlinelist.length - 1;
         
@@ -95,12 +95,12 @@ enyo.kind({
     dataChanged: function(){
         this.$.newsTitle.setContent(this.data.subject);
         this.$.detailContent.setContent(this.data.contents);
-        this.$.videoPlayer.setAttribute("poster", this.data.videoPoster);
+        this.$.videoPlayer.setAttribute("poster", this.data.videoPosterFile);
         this.$.videoPlayer.setAttribute("controls", "controls");
         this.$.videoPlayer.setAttribute("preload", "none");
         this.$.videoPlayer.setAttribute("width", "100%");
         this.$.videoPlayer.setAttribute("height", "200px");
-        this.$.videoSource.setAttribute("src", this.data.video);
+        this.$.videoSource.setAttribute("src", this.data.videoFile);
         this.$.videoPlayer.render();
         setTimeout(function(){
             $("#video_player")[0].pause();

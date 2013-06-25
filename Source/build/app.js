@@ -4177,7 +4177,7 @@ this.inherited(arguments), this.reloadData();
 },
 reloadData: function() {
 var e;
-GlobalVar.mock ? e = "mockdata/data.json" : e = "http://15.185.115.204/mobile/data.json";
+GlobalVar.mock ? e = "mockdata/data.json" : e = "http://15.185.115.204:3000/restful/messages";
 var t = new enyo.Ajax({
 url: e
 });
@@ -4189,7 +4189,7 @@ Utility.hideScrim(), console.log("HomeView: Get data.json error");
 },
 setupItem: function(e, t) {
 var n = t.index;
-this.$.thumbnail.setSrc(this.data[n].imageUrl), this.$.newsTitle.setContent(this.data[n].subject), this.$.publishAuthor.setContent("Publish Author: " + this.data[n].publishauthor), this.$.publishDate.setContent("Publish Date: " + this.data[n].publishdate);
+this.$.thumbnail.setSrc(this.data[n].thumbnailFile), this.$.newsTitle.setContent(this.data[n].subject), this.$.publishAuthor.setContent("Publish Author: " + this.data[n].author), this.$.publishDate.setContent("Publish Date: " + this.data[n].date);
 },
 itemTap: function(e, t) {
 var n = t.index, r = ViewLibrary.setView("DETAIL");
@@ -4286,9 +4286,9 @@ GlobalVar.OffLineListView = e, e.setData(GlobalVar.offlinelist);
 },
 downloadTapped: function() {
 var e = {};
-e.src = this.data.video, e.progress = 0;
-var t = encodeURI(this.data.video);
-e.fileName = t.substr(t.lastIndexOf("/") + 1), e.filePath = "/mnt/sdcard/ES_News" + t.substr(t.lastIndexOf("/")), Utility.showToast(e.fileName + " has been added to offline list."), GlobalVar.offlinelist.push(e);
+e.src = this.data.videoFile, e.progress = 0;
+var t = encodeURI(this.data.videoFile);
+e.fileName = t.substr(t.lastIndexOf("/") + 1), e.filePath = "/mnt/sdcard/ES_News" + t.substr(t.lastIndexOf("/")), Utility.showToast("Video has been added to offline list."), GlobalVar.offlinelist.push(e);
 var n = GlobalVar.offlinelist.length - 1, r = new FileTransfer, i = "/mnt/sdcard/ES_News" + t.substr(t.lastIndexOf("/"));
 r.onprogress = function(e) {
 e.lengthComputable && (console.log(e.loaded), GlobalVar.offlinelist[n].progress = e.loaded / 2 / e.total * 100, GlobalVar.offlinelist[n].loaded = e.loaded, GlobalVar.offlinelist[n].total = e.total, GlobalVar.OffLineListView.data = GlobalVar.offlinelist, GlobalVar.OffLineListView.dataChanged());
@@ -4301,7 +4301,7 @@ headers: {}
 });
 },
 dataChanged: function() {
-this.$.newsTitle.setContent(this.data.subject), this.$.detailContent.setContent(this.data.contents), this.$.videoPlayer.setAttribute("poster", this.data.videoPoster), this.$.videoPlayer.setAttribute("controls", "controls"), this.$.videoPlayer.setAttribute("preload", "none"), this.$.videoPlayer.setAttribute("width", "100%"), this.$.videoPlayer.setAttribute("height", "200px"), this.$.videoSource.setAttribute("src", this.data.video), this.$.videoPlayer.render(), setTimeout(function() {
+this.$.newsTitle.setContent(this.data.subject), this.$.detailContent.setContent(this.data.contents), this.$.videoPlayer.setAttribute("poster", this.data.videoPosterFile), this.$.videoPlayer.setAttribute("controls", "controls"), this.$.videoPlayer.setAttribute("preload", "none"), this.$.videoPlayer.setAttribute("width", "100%"), this.$.videoPlayer.setAttribute("height", "200px"), this.$.videoSource.setAttribute("src", this.data.videoFile), this.$.videoPlayer.render(), setTimeout(function() {
 $("#video_player")[0].pause();
 }, 1e3);
 }
@@ -4389,7 +4389,6 @@ return e >= 1048576 ? (e / 1048576).toFixed(2) + "MB" : e > 1024 && e < 1048576 
 enyo.kind({
 name: "hpit.controls.Body",
 fit: !0,
-classes: "controls-body",
 components: [ {
 kind: "Scroller",
 thumb: !1,
@@ -4423,7 +4422,7 @@ name: "hpit.controls.Header",
 components: [ {
 kind: "FittableColumns",
 noStretch: !0,
-classes: "onyx-toolbar onyx-toolbar-inline",
+classes: "controls-header onyx-toolbar onyx-toolbar-inline",
 style: "white-space: nowrap;padding:0px !important;",
 components: [ {
 name: "client",

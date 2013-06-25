@@ -34,7 +34,7 @@ enyo.kind({
         if(GlobalVar.mock){
             source_url = "mockdata/data.json";
         }else{
-            source_url = "http://15.185.115.204/mobile/data.json";
+            source_url = "http://15.185.115.204:3000/restful/messages";
         }
         var ajax = new enyo.Ajax({url: source_url});
         ajax.response(this, function(inSender,inResponse){
@@ -52,10 +52,10 @@ enyo.kind({
     },
     setupItem: function(inSender, inEvent){
         var index = inEvent.index;
-        this.$.thumbnail.setSrc(this.data[index].imageUrl);
+        this.$.thumbnail.setSrc(this.data[index].thumbnailFile);
         this.$.newsTitle.setContent(this.data[index].subject);
-        this.$.publishAuthor.setContent("Publish Author: "+this.data[index].publishauthor);
-        this.$.publishDate.setContent("Publish Date: "+this.data[index].publishdate);
+        this.$.publishAuthor.setContent("Publish Author: "+this.data[index].author);
+        this.$.publishDate.setContent("Publish Date: "+this.data[index].date);
     },
 
     itemTap: function(inSender, inEvent){
