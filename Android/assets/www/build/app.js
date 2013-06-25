@@ -4285,6 +4285,7 @@ var e = ViewLibrary.setView("OFFLINELIST");
 GlobalVar.OffLineListView = e, e.setData(GlobalVar.offlinelist);
 },
 downloadTapped: function() {
+if (this.data.videoFile && this.data.videoFile != "") {
 var e = {};
 e.src = this.data.videoFile, e.progress = 0;
 var t = encodeURI(this.data.videoFile);
@@ -4299,6 +4300,7 @@ console.log("download error source " + e.source), console.log("download error ta
 }, !1, {
 headers: {}
 });
+}
 },
 dataChanged: function() {
 this.$.newsTitle.setContent(this.data.subject), this.$.detailContent.setContent(this.data.contents), this.$.videoPlayer.setAttribute("poster", this.data.videoPosterFile), this.$.videoPlayer.setAttribute("controls", "controls"), this.$.videoPlayer.setAttribute("preload", "none"), this.$.videoPlayer.setAttribute("width", "100%"), this.$.videoPlayer.setAttribute("height", "200px"), this.$.videoSource.setAttribute("src", this.data.videoFile), this.$.videoPlayer.render(), setTimeout(function() {

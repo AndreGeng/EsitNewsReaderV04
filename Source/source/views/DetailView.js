@@ -48,48 +48,50 @@ enyo.kind({
 
     downloadTapped: function(){
 
-        var offlineData = {};
-        offlineData.src = this.data.videoFile;
-        offlineData.progress = 0;
-        var uri = encodeURI(this.data.videoFile);
-        offlineData.fileName = uri.substr(uri.lastIndexOf("/")+1);
-        offlineData.filePath = "/mnt/sdcard/ES_News" + uri.substr(uri.lastIndexOf("/"));
-        Utility.showToast("Video has been added to offline list.");
-        GlobalVar.offlinelist.push(offlineData);
-        var curIndex = GlobalVar.offlinelist.length - 1;
-        
-        var fileTransfer = new FileTransfer();
-        var filePath = "/mnt/sdcard/ES_News" + uri.substr(uri.lastIndexOf("/"));
-        fileTransfer.onprogress = function(progressEvent) {
-            if (progressEvent.lengthComputable) {
-              //loadingStatus.setPercentage(progressEvent.loaded / progressEvent.total);
-                console.log(progressEvent.loaded);
-                GlobalVar.offlinelist[curIndex].progress = progressEvent.loaded / 2 / progressEvent.total * 100;
-                GlobalVar.offlinelist[curIndex].loaded = progressEvent.loaded;
-                GlobalVar.offlinelist[curIndex].total = progressEvent.total;
+        if(this.data.videoFile && this.data.videoFile!=""){
+            var offlineData = {};
+            offlineData.src = this.data.videoFile;
+            offlineData.progress = 0;
+            var uri = encodeURI(this.data.videoFile);
+            offlineData.fileName = uri.substr(uri.lastIndexOf("/")+1);
+            offlineData.filePath = "/mnt/sdcard/ES_News" + uri.substr(uri.lastIndexOf("/"));
+            Utility.showToast("Video has been added to offline list.");
+            GlobalVar.offlinelist.push(offlineData);
+            var curIndex = GlobalVar.offlinelist.length - 1;
+            
+            var fileTransfer = new FileTransfer();
+            var filePath = "/mnt/sdcard/ES_News" + uri.substr(uri.lastIndexOf("/"));
+            fileTransfer.onprogress = function(progressEvent) {
+                if (progressEvent.lengthComputable) {
+                  //loadingStatus.setPercentage(progressEvent.loaded / progressEvent.total);
+                    console.log(progressEvent.loaded);
+                    GlobalVar.offlinelist[curIndex].progress = progressEvent.loaded / 2 / progressEvent.total * 100;
+                    GlobalVar.offlinelist[curIndex].loaded = progressEvent.loaded;
+                    GlobalVar.offlinelist[curIndex].total = progressEvent.total;
 
-                GlobalVar.OffLineListView.data = GlobalVar.offlinelist;
-                GlobalVar.OffLineListView.dataChanged();
-            } else {
-              //loadingStatus.increment();
+                    GlobalVar.OffLineListView.data = GlobalVar.offlinelist;
+                    GlobalVar.OffLineListView.dataChanged();
+                } else {
+                  //loadingStatus.increment();
+                }
             }
+            fileTransfer.download(
+                uri,
+                filePath,
+                function(entry) {
+                    console.log("download complete: " + entry.fullPath);
+                },
+                function(error) {
+                    console.log("download error source " + error.source);
+                    console.log("download error target " + error.target);
+                    console.log("upload error code" + error.code);
+                },
+                false,
+                {
+                    headers: {}
+                }
+            );
         }
-        fileTransfer.download(
-            uri,
-            filePath,
-            function(entry) {
-                console.log("download complete: " + entry.fullPath);
-            },
-            function(error) {
-                console.log("download error source " + error.source);
-                console.log("download error target " + error.target);
-                console.log("upload error code" + error.code);
-            },
-            false,
-            {
-                headers: {}
-            }
-        );
     },
 
     dataChanged: function(){
