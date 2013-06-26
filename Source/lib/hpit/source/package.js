@@ -1,0 +1,9 @@
+enyo.depends(
+	"SSOForm.css",
+	"hpit.mobile.hybrid.js",
+	"hpit.mobile.js",
+	"Ajax.js",
+	"SSOForm.js",
+	"Utils.js",
+	"AppUpdateNotification.js"
+);

@@ -55,6 +55,12 @@
     <plugin name="Echo" value="org.apache.cordova.Echo" />
     <plugin name="Globalization" value="org.apache.cordova.Globalization"/>
     <plugin name="InAppBrowser" value="org.apache.cordova.InAppBrowser"/>
+
+    <plugin name="SharedPreferencesDataStoragePlugin" value="com.hpit.mobile.login.SharedPreferencesDataStoragePlugin"/>
+    <plugin name="OpenBrowserWithCookiePlugin" value="com.hpit.mobile.login.OpenBrowserWithCookiePlugin"/>
+    <plugin name="DeviceTypePlugin" value="com.hpit.mobile.login.DeviceTypePlugin"/>
+    <plugin name="EmailSenderPlugin" value="com.hpit.mobile.login.EmailSenderPlugin"/>  
+    <plugin name="GetAppInfoPlugin" value="com.hpit.mobile.login.GetAppInfoPlugin"/>  
 </plugins>
 </cordova>
 

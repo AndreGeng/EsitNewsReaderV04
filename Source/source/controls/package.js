@@ -5,7 +5,6 @@ enyo.depends(
 	"Header.js",
 	"BackButton.js",
 	"FloatingLayer.js",
-	"Spinner.js",
 	"Scrim.js",
 	"Alert.js",
 	"Toast.js"

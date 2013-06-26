@@ -14,3 +14,11 @@ function deserialize(key) {
 	}
 	return localData;
 }
+
+function retrieveValue(key){
+	return window.localStorage.getItem(key);
+}
+
+function saveValue(key,value){
+	window.localStorage.setItem(key, value);
+}

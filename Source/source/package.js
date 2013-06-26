@@ -10,5 +10,6 @@ enyo.depends(
 	"App.css",
 	"App.js",
 	"GlobalVar.js",
-	"Common.js"
+	"Common.js",
+	"$lib/hpit"
 );

@@ -7,14 +7,14 @@ Utility = {
 
 	showScrim: function() {
 		if(this._appMain != null) {
-			this._appMain.$.spinner.show();
+			this._appMain.$.spinner.start();
     		this._appMain.$.scrim.show();
 		}
 	},
 
 	hideScrim: function() {
 		if(this._appMain != null) {
-			this._appMain.$.spinner.hide();
+			this._appMain.$.spinner.stop();
     		this._appMain.$.scrim.hide();
 		}
 	},

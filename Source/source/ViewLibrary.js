@@ -17,6 +17,7 @@ ViewLibrary = {
         this._history = [];
 
         /* Set the view library */
+        this._views["LOGIN"] = {kindName: "hpit.views.LoginView"}; 
         this._views["HOME"] = {kindName: "hpit.views.HomeView"}; 
         this._views["DETAIL"] = {kindName: "hpit.views.DetailView"};
         this._views["OFFLINELIST"] = {kindName: "hpit.views.OffLineListView"};
@@ -72,18 +73,4 @@ ViewLibrary = {
             this._panels.setIndex(index);
         }
     }
-    /*
-    popViewsFromHistory: function(numItems) {
-        this._container.popViewsFromHistory(numItems);
-    },
-    goBack: function() {
-        this._container.goBack();
-    },
-    retryHandler: function() {
-    	  this._container.retryHandler();
-    },
-    cleanup: function() {
-    	this._container = null;
-    	this._views = null;
-    }*/
 };

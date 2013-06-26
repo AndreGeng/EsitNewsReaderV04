@@ -1,7 +1,7 @@
 
 // minifier: path aliases
 
-enyo.path.addPaths({layout: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/layout/", onyx: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/onyx/", onyx: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/onyx/source/", arrangers: "../source/./arrangers/", views: "../source/./views/", controls: "../source/./controls/"});
+enyo.path.addPaths({layout: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/layout/", onyx: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/onyx/", onyx: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/onyx/source/", arrangers: "../source/./arrangers/", views: "../source/./views/", controls: "../source/./controls/", hpit: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/hpit/", hpit: "C://SVNElvis/ESNews/Source/enyo/tools/../../lib/hpit/source/"});
 
 // FittableLayout.js
 
@@ -3517,7 +3517,9 @@ _views: null,
 _panelCount: 0,
 _history: null,
 initViewList: function() {
-this._views = [], this._history = [], this._views.HOME = {
+this._views = [], this._history = [], this._views.LOGIN = {
+kindName: "hpit.views.LoginView"
+}, this._views.HOME = {
 kindName: "hpit.views.HomeView"
 }, this._views.DETAIL = {
 kindName: "hpit.views.DetailView"
@@ -3564,10 +3566,10 @@ bindAppMain: function(e) {
 this._appMain = e;
 },
 showScrim: function() {
-this._appMain != null && (this._appMain.$.spinner.show(), this._appMain.$.scrim.show());
+this._appMain != null && (this._appMain.$.spinner.start(), this._appMain.$.scrim.show());
 },
 hideScrim: function() {
-this._appMain != null && (this._appMain.$.spinner.hide(), this._appMain.$.scrim.hide());
+this._appMain != null && (this._appMain.$.spinner.stop(), this._appMain.$.scrim.hide());
 },
 showToast: function(e) {
 Utility._appMain.$.notifyHolder.show();
@@ -4386,6 +4388,33 @@ return e >= 1048576 ? (e / 1048576).toFixed(2) + "MB" : e > 1024 && e < 1048576 
 }
 });
 
+// LoginView.js
+
+enyo.kind({
+name: "hpit.views.LoginView",
+kind: "FittableRows",
+classes: "enyo-fit",
+components: [ {
+kind: "hpit.controls.Body",
+name: "loginViewBody",
+components: [ {
+name: "hpLoginForm",
+kind: "SSOForm",
+onLoginSuccess: "loginSuccessHandler",
+onLoginFailure: "loginFailureHandler"
+} ]
+} ],
+create: function() {
+this.inherited(arguments), this.$.hpLoginForm.$.hpLoginEmail.setValue(""), this.$.hpLoginForm.$.hpLoginPassword.setValue("");
+},
+loginSuccessHandler: function(e, t) {
+saveValue("SSOUserName", this.$.hpLoginForm.$.hpLoginEmail.getValue()), ViewLibrary.setView("HOME");
+},
+loginFailureHandler: function(e, t) {
+hpLogin.logd("loginFailureHandler - caught 'onLoginFailure' event triggered by HpLoginForm. reason=" + t.reason + ", userId=" + t.userId), hpLogin.getLoginFailureEnum().USER_CANCELLED === t.reason && hpLogin.logd("loginFailureHandler - hide login form.");
+}
+});
+
 // Body.js
 
 enyo.kind({
@@ -4475,21 +4504,6 @@ this.hasNode() || this.render();
 teardownChildren: function() {}
 }), onyx.floatingLayer = new onyx.FloatingLayer({
 classes: "onyx"
-});
-
-// Spinner.js
-
-enyo.kind({
-kind: "onyx.Scrim",
-name: "hpit.controls.Spinner",
-modal: !0,
-pack: "center",
-components: [ {
-kind: "onyx.Spinner",
-showing: !0,
-classes: "enyo-center",
-style: "position:fixed; left:40%; top:40%;margin-top:5%; margin-left:5%"
-} ]
 });
 
 // Scrim.js
@@ -4599,9 +4613,9 @@ name: "App",
 kind: "FittableRows",
 classes: "enyo-fit",
 components: [ {
-kind: "hpit.controls.Spinner",
-name: "spinner",
-style: "z-index:1000;"
+kind: "onyx.Spinner",
+classes: "app-spinner",
+name: "spinner"
 }, {
 kind: "hpit.controls.Scrim",
 name: "scrim"
@@ -4617,19 +4631,41 @@ showing: !1
 kind: "Panels",
 name: "mainPanels",
 arrangerKind: "BoxTurnArranger",
+draggable: !1,
 fit: !0,
 realtimeFit: !0,
 classes: "panels-sample-panels enyo-border-box",
 components: []
 } ],
 create: function() {
-this.inherited(arguments), ViewLibrary.bindPanelsControl(this.$.mainPanels), this.$.mainPanels.$.animator.setDuration(1e3), Utility.bindAppMain(this), document.addEventListener("deviceready", this.onDeviceReady, !1), GlobalVar.offlinelist = deserialize("offlineList");
+this.inherited(arguments), ViewLibrary.bindPanelsControl(this.$.mainPanels), this.$.mainPanels.$.animator.setDuration(1e3), Utility.bindAppMain(this), GlobalVar.offlinelist = deserialize("offlineList");
 },
 rendered: function() {
-this.inherited(arguments), ViewLibrary.setView("HOME"), Utility.hideScrim();
+this.inherited(arguments);
+var e = ViewLibrary.setView("LOGIN");
+Utility.hideScrim();
+var t = retrieveValue("SSOUserName");
+t != null && e.$.hpLoginForm.$.hpLoginEmail.setValue(t);
 },
 onDeviceReady: function() {
-document.addEventListener("backbutton", function() {
+hpLogin.logd("hpLogin init..."), hpLogin.setLogLevel(hpLogin.getLogLevelEnum().DEBUG), hpLogin.setLogAppenders([ hpLogin.getLogAppenderEnum().WEB_CONSOLE, hpLogin.getLogAppenderEnum().WEB_STORAGE ]), navigator.splashscreen.hide();
+var e = {
+"1": "SIGNED_IN",
+"2": "APP_CATALOG_NOT_INSTALLED",
+"3": "NOT_SIGNED_BY_HPIT",
+"4": "LOGIN_SESSION_NOT_FOUND",
+"5": "LOGIN_SESSION_DATA_BROKEN",
+"6": "SESSION_TIME_OUT",
+"7": "SET_COOKIE_FROM_CLIENT_SUCCESS",
+"8": "SET_COOKIE_FROM_CLIENT_FAILURE",
+"9": "SIGNED_IN_FAILURE",
+"99": "UNKNOWN_ERROR"
+}, t = this;
+hpLogin.init({
+done: function(e, t) {
+hpLogin.logd("status=" + e + ", userId=" + t), hpLogin.getInitStatusEnum().SIGNED_IN !== e && (hpLogin.getInitStatusEnum().SESSION_TIME_OUT === e ? Utility.hideScrim() : Utility.hideScrim());
+}
+}), document.addEventListener("backbutton", function() {
 serialize(GlobalVar.offlinelist, "offlineList"), navigator.app.exitApp();
 }, !1);
 }
@@ -4652,3 +4688,889 @@ if (t == null) return new Array;
 var n = JSON.parse(t);
 return n == null && (n = new Array), n;
 }
+
+function retrieveValue(e) {
+return window.localStorage.getItem(e);
+}
+
+function saveValue(e, t) {
+window.localStorage.setItem(e, t);
+}
+
+// hpit.mobile.hybrid.js
+
+var BrowserOpenPlugin = {
+open: function(e, t, n, r) {
+return cordova.exec(n, r, "OpenBrowserWithCookiePlugin", "open", [ e, t ]);
+}
+}, NativeStoragePlugin = {
+get: function(e, t, n) {
+return cordova.exec(t, n, "SharedPreferencesDataStoragePlugin", "get", [ e ]);
+},
+put: function(e, t, n, r) {
+return cordova.exec(n, r, "SharedPreferencesDataStoragePlugin", "put", [ e, t ]);
+}
+}, DeviceTypePlugin = {
+get: function(e, t) {
+return cordova.exec(e, t, "DeviceTypePlugin", "", []);
+}
+}, GetDeviceIdPlugin = {
+get: function(e, t) {
+return cordova.exec(e, t, "GetDeviceIdPlugin", "get", []);
+}
+}, NonMarketAppInstallConfigPlugin = {
+get: function(e, t) {
+return cordova.exec(e, t, "NonMarketAppInstallConfigPlugin", "get", []);
+},
+set: function(e, t) {
+return cordova.exec(e, t, "NonMarketAppInstallConfigPlugin", "set", []);
+}
+}, EmailSenderPhoneGapPlugin = {
+send: function(e, t, n, r, i) {
+return cordova.exec(r, i, "EmailSenderPlugin", "send", [ e, t, n ]);
+}
+};
+
+// hpit.mobile.js
+
+var hpLogin = function() {
+var e = "ITG", t = {
+DEV: {
+baseURL: "https://d9t0254g.houston.hp.com"
+},
+ITG: {
+baseURL: "https://it-services-itg.external.hp.com"
+},
+PROD: {
+baseURL: "https://it-services.external.hp.com"
+}
+}, n = {
+"d9t0254g.houston.hp.com": "DEV",
+"it-services-itg.external.hp.com": "ITG",
+"it-services.external.hp.com": "PROD",
+"d9w0602g.houston.hp.com": "DEV",
+"g9t1264g.houston.hp.com": "ITG",
+"g9w1488g.houston.hp.com": "ITG",
+"g9w1489g.houston.hp.com": "ITG",
+"g5t0608g.atlanta.hp.com": "PROD",
+"g6t0625g.atlanta.hp.com": "PROD",
+"g5w2688g.atlanta.hp.com": "PROD",
+"g6w2453g.atlanta.hp.com": "PROD"
+}, r = !1, i = typeof cordova != "undefined", s = "", o = "", u = "action=__LOGINACTION__&user=__USERID__&password=__PASSWORD__&deviceos=__DEVICEOS__&devicetype=__DEVICETYPE__&deviceNDUID=__DEVICENDUID__&osType=__OSTYPE__", a = "__SRPBASEURL__/template.LOGOUT", f = "", l = "", c = "<TD>HTTP_SM_UNIVERSALID</TD><TD>", h = "</TD></TR>", p = "", d = "", v = "", m = {
+SIGNED_IN: 1,
+APP_CATALOG_NOT_INSTALLED: 2,
+NOT_SIGNED_BY_HPIT: 3,
+LOGIN_SESSION_NOT_FOUND: 4,
+LOGIN_SESSION_DATA_BROKEN: 5,
+SESSION_TIME_OUT: 6,
+SET_COOKIE_FROM_CLIENT_SUCCESS: 7,
+SET_COOKIE_FROM_CLIENT_FAILURE: 8,
+SIGNED_IN_FAILURE: 9,
+DEVICEID_NOT_FOUND: 31,
+UNKNOWN_ERROR: 99
+}, g = {
+INCORRECT_CREDENTIALS: 1,
+CONNECTION_TIMES_OUT: 2,
+USER_CANCELLED: 3,
+INTERNAL_ERROR: 9
+}, y = "", b = "", w = "", E = "", S = "", x = "", T = "", N = {
+LOGON: "logon",
+LOGON_ONLY: "logononly"
+}, C = "", k = "", L = {
+ERROR: "ERROR",
+INFO: "INFO",
+DEBUG: "DEBUG",
+DISABLED: "DISABLED"
+}, A = {
+WEB_CONSOLE: "WEB_CONSOLE",
+WEB_STORAGE: "WEB_STORAGE"
+}, O = L.DEBUG, M = [ A.WEB_CONSOLE ], _ = function() {
+var e = "hpLogin._checkIfWebBased - ";
+hpLogin.logd(e + "check current application is running from browser (web-based) or native (hybrid)."), r = 0 === window.location.protocol.indexOf("http"), hpLogin.logi(e + "isAppWebBased=" + r + ", isCordovaAvailable=" + i);
+}, D = function() {
+var i = "hpLogin.init: _setupEnv - ", u;
+if (r) {
+var a = window.location.hostname, c = n[a];
+u = t[c], e = c;
+} else {
+var h = window.localStorage.hpLoginEnvName || "";
+hpLogin.logi(i + "storedEnvName=" + h), h ? (hpLogin.logd(i + "Found stored env " + h), u = t[h], u && u.baseURL && (e = h)) : u = t[e];
+}
+if (!u || !u.baseURL) hpLogin.logi(i + 'use default env "PROD".'), u = t.PROD, e = "PROD";
+hpLogin.logi(i + "envName=" + e), s = u.baseURL, o = s + "/auth/login.pl", f = s + "/mobility", l = f + "/headers.pl", hpLogin.logi(i + "loginURL=" + o + ", SRPBaseURL=" + f);
+}, P = function() {
+var e = "hpLogin.init: _retrieveDeviceInfo() - isAppWebBased=" + r + ", ";
+if (r || !i) {
+var t = navigator.userAgent;
+hpLogin.logi("hpLogin._retrieveDeviceInfo(): userAgent=" + t), E = B(), b = R(), w = q(), y = j();
+} else b = U(), E = H(), I(), F();
+hpLogin.logi(e + "deviceId=" + y + ", osVersion=" + b + ", deviceType=" + w + ", osType=" + E);
+}, H = function() {
+var e = {
+webOS: "WebOS",
+palm: "WebOS",
+Android: "Android",
+iPhone: "iOS",
+iPad: "iOS",
+iPod: "iOS",
+"iPhone Simulator": "iOS",
+"iPad Simulator": "iOS",
+iOS: "iOS"
+};
+return e[device.platform] || "NonSupportedOS";
+}, B = function() {
+var e = "", t = navigator.userAgent;
+return t.indexOf("webOS") > -1 || t.indexOf("hpwOS") > -1 ? e = "WebOS" : t.indexOf("Android") > -1 ? e = "Android" : t.indexOf("iPhone") > -1 || t.indexOf("iPad") > -1 || t.indexOf("iPod") > -1 ? e = "iOS" : t.indexOf("Windows NT") > -1 ? e = "Windows_non_Phone" : e = "NonSupportedOS", e;
+}, j = function() {
+var e = "FAKE_" + E + "_" + b + "_" + w;
+return e.replace(/\.|\s|\//g, "_");
+}, F = function() {
+var e = "hpLogin._fetchDeviceIdForHybrid: ";
+y = device.uuid, hpLogin.logi(e + "deviceId: " + y), "iOS" === E ? GetDeviceIdPlugin.get(function(t) {
+hpLogin.logi(e + "PhoneGap Plugin DeviceTypePlugin success: " + t), y = t;
+}, function(t) {
+hpLogin.loge(e + "PhoneGap Plugin DeviceTypePlugin failure: " + t), "DEVICEID_NOT_FOUND" === t ? Y(m.DEVICEID_NOT_FOUND) : Y(m.UNKNOWN_ERROR);
+}) : y || setTimeout(function() {
+y = device.uuid, hpLogin.logi(e + "Retried to get device id after 1 second. deviceId=" + y), y || setTimeout(function() {
+y = device.uuid, hpLogin.logi(e + "Retried to get device id after 2 seconds. deviceId=" + y);
+}, 1e3);
+}, 1e3);
+}, I = function() {
+var e = "hpLogin._fetchDeviceTypeForHybrid: ";
+"Android" === E ? DeviceTypePlugin.get(function(t) {
+hpLogin.logi(e + "PhoneGap Plugin DeviceTypePlugin success: " + t), w = t;
+}, function(t) {
+hpLogin.loge(e + "PhoneGap Plugin DeviceTypePlugin failure: " + t);
+}) : w = q();
+}, q = function() {
+var e = "hpLogin._getDeviceTypeForWebBased: ", t = "Web Based", n = navigator.userAgent, r = n.split(" ");
+if (n.indexOf("webOS") > -1 || n.indexOf("hpwOS") > -1) {
+var i = r[r.length - 1].toLowerCase();
+if (i.indexOf("emulator") > -1) t = "Emulator"; else if (i.indexOf("desktop") > -1) t = "Emulator"; else if (i.indexOf("pre") > -1) t = "Pre"; else if (i.indexOf("pre/3.0") > -1) t = "Pre3"; else if (i.indexOf("touchpad") > -1) t = "TouchPad"; else if (i.indexOf("veer") > -1 || i.indexOf("p160una") > -1) t = "Veer";
+} else if (n.indexOf("Android") > -1) {
+var s = $(window).width(), o = $(window).height();
+hpLogin.logd(e + "width=" + s + ", height=" + o), s < 720 ? t = "Android_Phone" : t = "Android_Tablet";
+} else n.indexOf("iPhone") > -1 || n.indexOf("iPod") > -1 ? t = "iPhone" : n.indexOf("iPad") > -1 ? t = "iPad" : n.indexOf("Windows NT 6.2") > -1 && (t = "Windows_any_device");
+return t;
+}, R = function() {
+var e = "";
+navigator && navigator.userAgent && (e = navigator.userAgent.toLowerCase());
+var t = "";
+return e.indexOf("webos") > -1 ? t = hpLogin.Utils.substringBetween(e, "webos/", ";") : e.indexOf("hpwos") > -1 ? t = hpLogin.Utils.substringBetween(e, "hpwos/", ";") : e.indexOf("android") > -1 ? t = hpLogin.Utils.substringBetween(e, "android", ";") : e.indexOf("iphone") > -1 || e.indexOf("ipad") > -1 || e.indexOf("ipod") > -1 ? (t = hpLogin.Utils.substringBetween(e, "iphone os ", " ").replace(/_/g, "."), t || (t = hpLogin.Utils.substringBetween(e, "cpu os ", " ").replace(/_/g, ".")), t === "" && (t = "1.0.0")) : e.indexOf("windows nt 6.2") > -1 && (t = "8.0.0"), t ? (t = hpLogin.Utils.trim(t), t.indexOf("-") > -1 && t.substring(0, t.indexOf("-")), t.split(".").length == 2 && (t += ".0")) : t = "Undefined OS", t;
+}, U = function() {
+var e = device.version;
+for (var t = 0; t < e.length; t++) {
+var n = e.charAt(t);
+n !== "." && (n < "0" || n > "9") && (e = e.substring(0, t));
+}
+return e.split(".").length == 2 && (e += ".0"), e;
+}, z = function() {
+var e = "hpLogin.init: _restoreLoginSession - ";
+hpLogin.logd(e + "ENTRY");
+if (typeof NativeStoragePlugin == "undefined") {
+hpLogin.logd(e + "Cordova shared storage plugin is NOT available. window.localStorage will be used.");
+var t = window.localStorage.getItem("LoginSession") || "";
+X(t);
+} else NativeStoragePlugin.get("LoginSession", function(e) {
+X(e);
+}, function(e) {
+W(e);
+});
+}, W = function(e) {
+var t = "hpLogin.init: _restoreLoginSessionFailure() - ";
+hpLogin.loge(t + "with detailed errors --> " + e), "APP_CATALOG_NOT_INSTALLED" === e ? Y(m.APP_CATALOG_NOT_INSTALLED) : "NOT_SIGNED_BY_HPIT" === e ? Y(m.NOT_SIGNED_BY_HPIT) : Y(m.UNKNOWN_ERROR);
+}, X = function(e) {
+var t = "hpLogin.init: _restoreLoginSessionSuccess() - ";
+hpLogin.logd(t + "ENTRY");
+if (!e) return hpLogin.logd(t + 'no "LoginSession" found.'), Y(m.LOGIN_SESSION_NOT_FOUND);
+var n = JSON.parse(e);
+d = n.SMSESSION || "", p = n.loggedUser || "", v = n.timestamp || "", hpLogin.logi(t + "loggedUser=" + p + ", timestamp=" + v + ", smsession=" + hpLogin.Utils.truncateSMSESSION(d));
+if (V()) return Y(m.SESSION_TIME_OUT, p);
+d && p ? J() : (hpLogin.loge(t + 'Content of "LoginSession" is broken.'), Y(m.LOGIN_SESSION_DATA_BROKEN));
+}, V = function() {
+var e = "hpLogin.init: _checkIfSessionTimesOut() - ";
+if (hpLogin.Utils.isNumeric(v)) {
+var t = new Date(v), n = new Date, r = (n - t) / 36e5;
+return hpLogin.logd(e + "timeElapsedInHours=" + r), r >= 1 ? (hpLogin.logi(e + "the elapsed time is GREATER than 1 hour."), !0) : (hpLogin.logi(e + "the elapsed time is LESS than 1 hour."), !1);
+}
+return hpLogin.logi(e + "The timestamp is NOT numeric. This means there is no valid timestamp, we consider this as session time out."), !0;
+}, J = function() {
+K();
+}, K = function() {
+var e = "hpLogin.init: _setCookieFromServer() - ";
+hpLogin.logd(e + "Entry");
+var t = hpLogin.getBaseURL() + "/auth/checksession.pl";
+hpLogin.ajax.request({
+url: t,
+method: "POST",
+body: {
+SESSIONSM: hpLogin.getSMSESSION()
+},
+callback: {
+success: Q,
+failure: G
+}
+});
+}, Q = function(e, t) {
+var n = "hpLogin.setCookieSuccess - ", r = JSON.parse(t);
+hpLogin.setLoggedUser(r.userId || ""), hpLogin.setSMSESSION(r.SMSESSION || ""), hpLogin.logi(n + "setCookieRequest.done() - loggedUser=" + hpLogin.getLoggedUser() + "; SMSESSION=" + hpLogin.Utils.truncateSMSESSION(hpLogin.getSMSESSION())), hpLogin.getLoggedUser() && hpLogin.getSMSESSION() ? (hpLogin.logd(n + "setCookieRequest.done() - found loggedUser and SMSESSION --> User is signed in successfully, to refresh stored login session."), hpLogin._persistLoginSession(), hpLogin._fireInitDone(hpLogin.getInitStatusEnum().SIGNED_IN, hpLogin.getLoggedUser())) : (hpLogin.logd(n + "setCookieRequest.done() - failure --> loggedUser or smsession is not found in response."), hpLogin._fireInitDone(hpLogin.getInitStatusEnum().SIGNED_IN_FAILURE));
+}, G = function(e, t) {
+var n = "hpLogin.setCookieFailure - ";
+hpLogin.loge(n + "setCookieRequest.fail() - status=" + e.status + ", statusText=" + e.statusText + ", inRequest=" + JSON.stringify(e)), hpLogin._fireInitDone(hpLogin.getInitStatusEnum().SIGNED_IN_FAILURE, hpLogin.getLoggedUser());
+}, Y = function(e, t) {
+var n = "hpLogin.init: _fireInitDone() - ";
+hpLogin.logi(n + "inInitStatus=" + e + ", inUserId=" + t), k = e;
+if (S.done && hpLogin.Utils.isFunction(S.done)) {
+hpLogin.logd(n + "callback function --> " + S.done);
+var r = t || "";
+r ? S.done(e, r) : S.done(e);
+} else hpLogin.logi(n + 'callback function "done" is not found.');
+}, Z = function(e, t) {
+var n = "hpLogin.login: _doLogin() - ";
+hpLogin.logd(n + "ENTRY"), hpLogin.logd(n + "deviceType=" + hpLogin.getDeviceType() + ", osVersion=" + hpLogin.getOsVersion() + ", deviceId=" + hpLogin.getDeviceId() + ", osType=" + hpLogin.getOsType());
+var r = hpLogin.getLoginPostBody().replace("__USERID__", encodeURIComponent(e)).replace("__PASSWORD__", encodeURIComponent(t)).replace("__DEVICEOS__", encodeURIComponent(hpLogin.getOsVersion())).replace("__DEVICETYPE__", encodeURIComponent(hpLogin.getDeviceType())).replace("__DEVICENDUID__", encodeURIComponent(hpLogin.getDeviceId())).replace("__OSTYPE__", encodeURIComponent(hpLogin.getOsType())).replace("__LOGINACTION__", encodeURIComponent(T));
+hpLogin.ajax.request({
+url: hpLogin.getLoginURL(),
+method: "POST",
+body: r,
+callback: {
+success: et,
+failure: tt
+}
+}), hpLogin.logd(n + "loginURL=" + hpLogin.getLoginURL());
+}, et = function(e, t) {
+var n = "hpLogin.loginCallSuccess - ", r = hpLogin.Utils.substringBetween(t, hpLogin.getTagBeforeUserId(), hpLogin.getTagAfterUserId()) || "";
+hpLogin.setLoggedUser(r);
+var i = hpLogin.Utils.substringBetween(e.getResponseHeader("Set-Cookie"), "SMSESSION=", ";") || hpLogin.Utils.substringBetween(t, "SMSESSION</TD><TD>", "</TD>");
+hpLogin.setSMSESSION(i), hpLogin.logi(n + "loginRequest.done() --> loggedUser=" + r + "; SMSESSION=" + hpLogin.Utils.truncateSMSESSION(i)), r && i ? (hpLogin.logi(n + "loggedUser and SMSESSION are found in response. --> User signed in successfully. To refresh stored LoginSession"), hpLogin._persistLoginSession(), hpLogin._fireLoginSuccess(r)) : (hpLogin.logi(n + "loginRequest.done() - login failure --> loggedUser or smsession is not found in response."), hpLogin._fireLoginFailure(hpLogin.getLoginFailureEnum().INCORRECT_CREDENTIALS, ""));
+}, tt = function(e, t) {
+var n = "hpLogin.loginCallFailure - ";
+hpLogin.logi(n + "loginRequest.fail() - inXhr.status=" + e.status + ", inXhr=" + JSON.stringify(e));
+var r;
+e.status === 0 ? r = hpLogin.getLoginFailureEnum().CONNECTION_TIMES_OUT : e.status === 401 ? r = hpLogin.getLoginFailureEnum().INCORRECT_CREDENTIALS : r = hpLogin.getLoginFailureEnum().INTERNAL_ERROR, hpLogin._fireLoginFailure(r, "");
+}, nt = function(e) {
+x.success && hpLogin.Utils.isFunction(x.success) && (hpLogin.logi("hpLogin._fireLoginSuccess(): login success --> userId=" + e + ", call back: " + x.success), x.success(e));
+}, rt = function(e, t) {
+x.failure && hpLogin.Utils.isFunction(x.failure) && (hpLogin.logi("hpLogin._fireLoginFailure(): login failure --> userId=" + t + ", call back: " + x.failure), x.failure(e, t));
+}, it = function() {
+var e = "hpLogin._doLogout - ";
+hpLogin.logd(e + "ENTRY");
+var t = hpLogin.getLogoutURL().replace("__SRPBASEURL__", hpLogin.getSRPBaseURL());
+hpLogin.logd(e + "logoutURL=" + t), hpLogin.ajax.request({
+url: t,
+method: "GET",
+callback: {
+success: st,
+failure: ot
+}
+});
+}, st = function(e, t) {
+var n = "hpLogin._doLogoutCallSuccess - ";
+hpLogin.logi(n + "inXhr.status=" + e.status + ", inXhr=" + JSON.stringify(e)), ut(hpLogin.getLoggedUser());
+}, ot = function(e, t) {
+var n = "hpLogin._doLogoutCallFailure - ";
+hpLogin.logi(n + "inXhr.status=" + e.status + ", inXhr=" + JSON.stringify(e)), ut(hpLogin.getLoggedUser());
+}, ut = function(e) {
+C && C.done && hpLogin.Utils.isFunction(C.done) && (hpLogin.logi("hpLogin.logout(): done --> userId=" + e + ", call back: " + C.done), C.done(e));
+}, at = function() {
+var e = "hpLogin.persistLoginSession(): ";
+v = (new Date).getTime();
+var t = {
+SMSESSION: d,
+timestamp: v,
+loggedUser: p
+};
+hpLogin.logd(e + "smsession=" + hpLogin.Utils.truncateSMSESSION(d) + ", loggedUser=" + p), typeof NativeStoragePlugin == "undefined" ? (hpLogin.logd(e + "Cordova shared storage plugin is NOT available. window.localStorage will be used."), t.SMSESSION = "", t.timestamp = "", window.localStorage.setItem("LoginSession", JSON.stringify(t))) : NativeStoragePlugin.put("LoginSession", JSON.stringify(t), function(t) {
+hpLogin.logd(e + "success - " + t);
+}, function(t) {
+hpLogin.loge(e + "failure - " + t);
+});
+}, ft = function(e) {
+var t = "hpLogin._openUrlWithSSOAfterInit(): ";
+if (d && v && !V()) {
+hpLogin.logd(t + "SMSESSION is valid --> Open with PhoneGap plugin.");
+var n = s + "/auth/checksession.pl?targeturl=" + encodeURIComponent(e);
+BrowserOpenPlugin.open(encodeURI(n), d, function(e) {
+hpLogin.logd(t + "PhoneGap Plugin open success: " + e);
+}, function(n) {
+hpLogin.loge(t + "PhoneGap Plugin open failure: " + n), window.open(e);
+});
+} else hpLogin.logd(t + "SMSESSION is NOT valid --> Directly open in new window."), window.open(e);
+}, lt = function(e, t) {
+ct({
+t: (new Date).toUTCString(),
+m: e,
+l: t
+});
+}, ct = function(e) {
+for (var t = 0; t < M.length; t++) {
+var n = M[t];
+n === A.WEB_CONSOLE ? window.console && console.log(e.m) : n === A.WEB_STORAGE && ht(e);
+}
+}, ht = function(e) {
+var t = window.sessionStorage.getItem("hpit-mobile-log");
+t ? t = JSON.parse(t) : t = [], t.push(e), window.sessionStorage.setItem("hpit-mobile-log", JSON.stringify(t));
+}, pt = function(e) {
+var t = "hpLogin._refreshSMSESSION - ", n = hpLogin.Utils.substringBetween(e.getResponseHeader("Set-Cookie"), "SMSESSION=", ";") || "";
+n ? (hpLogin.setSMSESSION(n), hpLogin.logd(t + "_refreshSMSESSION() - SMSESSION is found in response --> " + hpLogin.Utils.truncateSMSESSION(d) + ". To refresh stored LoginSession"), hpLogin._persistLoginSession()) : hpLogin.logd(t + "_refreshSMSESSION() - SMSESSION is NOT found in response.");
+};
+return {
+getDeviceId: function() {
+return y;
+},
+getDeviceType: function() {
+return w;
+},
+getOsVersion: function() {
+return b;
+},
+getOsType: function() {
+return E;
+},
+getBaseURL: function() {
+return s;
+},
+getSRPBaseURL: function() {
+return f;
+},
+getTargetURL: function() {
+return l;
+},
+getInitStatusEnum: function() {
+return m;
+},
+getLoginFailureEnum: function() {
+return g;
+},
+getLoggedUser: function() {
+return p;
+},
+setLoggedUser: function(e) {
+p = e;
+},
+getEnv: function() {
+return s || D(), e;
+},
+getInitStatus: function() {
+return k;
+},
+getSMSESSION: function() {
+return d;
+},
+setSMSESSION: function(e) {
+d = e;
+},
+isAppWebBased: function() {
+return r;
+},
+getLoginPostBody: function() {
+return u;
+},
+getLoginURL: function() {
+return o;
+},
+getLogoutURL: function() {
+return a;
+},
+getTagBeforeUserId: function() {
+return c;
+},
+getTagAfterUserId: function() {
+return h;
+},
+getLoginActionEnum: function() {
+return N;
+},
+init: function(e) {
+var t = "hpLogin.init(): ";
+S = e, D(), P(), z(), hpLogin.logd("hpLogin.init(): EXIT");
+},
+setEnv: function(e) {
+var t = "hpLogin.setEnv: ";
+hpLogin.logd(t + "inEnvName=" + e), e && (hpLogin.logd(t + "Update environment setup"), window.localStorage.setItem("hpLoginEnvName", e), D(), d = "", hpLogin.logd(t + "Cleanup SMSESSION from local storage."), at());
+},
+loginWithCredentials: function(e, t, n) {
+var r = "hpLogin.login: loginWithCredentials() - ";
+hpLogin.logd(r + "ENTRY"), x = n, T = n.action || hpLogin.getLoginActionEnum().LOGON, e && t ? Z(e, t) : rt(g.INCORRECT_CREDENTIALS, e);
+},
+logout: function(e) {
+var t = "hpLogin.logout ";
+C = e, d = "LOGOUT", hpLogin.logd(t + "Set SMSESSION with value 'LOGOUT'. To refresh LoginSession storage."), at(), it();
+},
+openUrlWithSSO: function(e) {
+var t = "hpLogin.openUrlWithSSO(): ";
+hpLogin.logd(t + "Entry");
+if (r || E == "NonSupportedOS" || !i) {
+hpLogin.logd(t + "SSO feature is not available. It will call window.open() to open the url"), window.open(e);
+return;
+}
+s ? ft(e) : (D(), NativeStoragePlugin.get("LoginSession", function(t) {
+if (t) {
+var n = JSON.parse(t);
+n && (d = n.SMSESSION || "", p = n.loggedUser || "", v = n.timestamp || "");
+}
+ft(e);
+}, function(t) {
+ft(e);
+}));
+},
+isLogDisabled: function() {
+return O === L.DISABLED;
+},
+isErrorEnabled: function() {
+return O === L.DEBUG || O === L.INFO || O === L.ERROR;
+},
+isInfoEnabled: function() {
+return O === L.DEBUG || O === L.INFO;
+},
+isDebugEnabled: function() {
+return O === L.DEBUG;
+},
+loge: function(e) {
+this.isErrorEnabled() && lt(e, "ERROR");
+},
+logi: function(e) {
+this.isInfoEnabled() && lt(e, "INFO");
+},
+logd: function(e) {
+this.isDebugEnabled() && lt(e, "DEBUG");
+},
+getLogs: function() {
+return window.sessionStorage.getItem("hpit-mobile-log");
+},
+getLogLevelEnum: function() {
+return L;
+},
+getLogAppenderEnum: function() {
+return A;
+},
+getLogLevel: function() {
+return O;
+},
+getLogAppenders: function() {
+return M;
+},
+setLogLevel: function(e) {
+O = e, hpLogin.logd("hpLogin.setLogLevel: " + O);
+},
+setLogAppenders: function(e) {
+M = e, hpLogin.logd("hpLogin.setLogAppenders: " + M);
+},
+_preInit: function() {
+_();
+},
+_fireInitDone: Y,
+_persistLoginSession: at,
+_fireLoginSuccess: nt,
+_fireLoginFailure: rt,
+refreshSMSESSION: pt
+};
+}();
+
+hpLogin._preInit();
+
+// Ajax.js
+
+hpLogin.ajax = {
+request: function(e) {
+var t = this._getXMLHttpRequest(), n = e.method || "GET";
+t.open(n, e.url, !0), this._makeReadyStateHandler(t, e.callback), t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+if (e.headers) for (var r in e.headers) t.setRequestHeader(r, e.headers[r]);
+return t.send(hpLogin.Utils.isString(e.body) ? e.body : this._objectToQuery(e.body) || null), t;
+},
+_getXMLHttpRequest: function() {
+try {
+return new XMLHttpRequest;
+} catch (e) {}
+try {
+return new ActiveXObject("Msxml2.XMLHTTP");
+} catch (e) {}
+try {
+return new ActiveXObject("Microsoft.XMLHTTP");
+} catch (e) {}
+return null;
+},
+_makeReadyStateHandler: function(e, t) {
+e.onreadystatechange = function() {
+if (e.readyState == 4) {
+var n = t.success, r = t.failure;
+hpLogin.ajax._isFailure(e) ? (hpLogin.logd("_makeReadyStateHandler=> Failure"), r && hpLogin.Utils.isFunction(r) && r(e, e.responseText)) : (hpLogin.logd("_makeReadyStateHandler=> Success"), n && hpLogin.Utils.isFunction(n) && n(e, e.responseText));
+}
+};
+},
+_objectToQuery: function(e) {
+var t = encodeURIComponent, n = [], r = {};
+for (var i in e) {
+var s = e[i];
+if (s != r[i]) {
+var o = t(i) + "=";
+if (hpLogin.Utils.isArray(s)) for (var u = 0; u < s.length; u++) n.push(o + t(s[u])); else n.push(o + t(s));
+}
+}
+return n.join("&");
+},
+_isFailure: function(e) {
+return console.log("inXhr  " + e.status), e.status < 200 || e.status >= 300;
+}
+};
+
+// SSOForm.js
+
+enyo.kind({
+name: "SSOForm",
+kind: "enyo.Control",
+layoutKind: "FittableRowsLayout",
+classes: "enyo-fit",
+events: {
+onLoginSuccess: "",
+onLoginFailure: ""
+},
+components: [ {
+kind: "enyo.Scroller",
+style: "padding-top: 10px;",
+thumb: !1,
+fit: !0,
+touch: !0,
+horizontal: "hidden",
+components: [ {
+kind: "FittableColumns",
+components: [ {
+tag: "div",
+classes: "div-background",
+style: "width:74px;height:74px;"
+}, {
+tag: "div",
+content: "ES IT News Reader",
+style: "margin-left:10px;line-height:74px;",
+classes: "title-font"
+} ]
+}, {
+style: "padding: 20px;",
+components: [ {
+tag: "div",
+classes: "title-font",
+content: "Please sign in"
+}, {
+tag: "div",
+classes: "regular-font",
+style: "margin-top:20px;",
+content: "Signing in gives you access to HP intranet and make ES IT News available which you can't get otherwise."
+}, {
+tag: "div",
+style: "color: #FF0000; padding: 10px 0px;",
+name: "hpLoginMessage"
+}, {
+tag: "div",
+style: "margin-bottom: 20px;",
+components: [ {
+tag: "div",
+classes: "regular-font",
+content: "Username",
+style: "float: left;font-size:28px;"
+}, {
+tag: "div",
+content: "*",
+style: "color:red;"
+} ]
+}, {
+style: "clear:both;"
+}, {
+kind: "onyx.Groupbox",
+components: [ {
+kind: "onyx.InputDecorator",
+components: [ {
+kind: "onyx.Input",
+style: "width: 100%;",
+name: "hpLoginEmail",
+type: "email"
+} ]
+} ]
+}, {
+tag: "div",
+style: "margin-top: 10px;margin-bottom: 20px;",
+components: [ {
+tag: "div",
+classes: "regular-font",
+content: "Password",
+style: "float: left;font-size:28px;"
+}, {
+tag: "div",
+content: "*",
+style: "color:red;"
+} ]
+}, {
+style: "clear:both;"
+}, {
+kind: "onyx.Groupbox",
+components: [ {
+kind: "onyx.InputDecorator",
+components: [ {
+kind: "onyx.Input",
+style: "width: 100%;",
+type: "password",
+name: "hpLoginPassword"
+} ]
+} ]
+}, {
+kind: "FittableColumns",
+style: "margin-top:20px;",
+components: [ {
+kind: "onyx.Button",
+classes: "red-bg hp-button",
+content: "Sign In",
+style: "float:right;",
+ontap: "signInClick"
+}, {
+kind: "onyx.Button",
+classes: "gray-bg hp-button",
+content: "Cancel",
+style: "float:left",
+ontap: "cancelClick"
+} ]
+} ]
+} ]
+} ],
+create: function() {
+this.inherited(arguments);
+},
+rendered: function() {
+this.inherited(arguments), this.initEmailField();
+},
+initEmailField: function() {
+hpLogin.logd("hpLoginForm.initEmailField - Entry");
+var e = this.$.hpLoginEmail.hasNode().value;
+if (!e) {
+var t = hpLogin.getLoggedUser();
+hpLogin.logd("hpLoginForm.init - lastLoggedUser=" + t), t && this.$.hpLoginEmail.setValue(t);
+}
+},
+signInClick: function() {
+Utility.showScrim(), this.setMessage(""), console.log(hpLogin.getOsType());
+if (hpLogin.getOsType() == "") return this.loginWithCredentialsSuccess(e), !0;
+var e = this.$.hpLoginEmail.hasNode().value, t = this.$.hpLoginPassword.hasNode().value;
+hpLogin.logd("email=" + e);
+var n = {
+success: enyo.bind(this, "loginWithCredentialsSuccess"),
+failure: enyo.bind(this, "loginWithCredentialsFailure")
+};
+hpLogin.loginWithCredentials(e, t, n);
+},
+loginWithCredentialsSuccess: function(e) {
+hpLogin.logd("hpLoginFormEnyo.loginSuccess - userId=" + e), this.$.hpLoginPassword.setValue(""), Utility.hideScrim(), this.doLoginSuccess({
+userId: e
+});
+},
+loginWithCredentialsFailure: function(e, t) {
+hpLogin.logi("hpLoginFormEnyo.loginFailure - reason=" + e + ", userId=" + t), hpLogin.getLoginFailureEnum().CONNECTION_TIMES_OUT === e ? this.setMessage("Sign-in times out. Please check your network connection and try again later.") : hpLogin.getLoginFailureEnum().INCORRECT_CREDENTIALS === e ? this.setMessage("Sign-in failed. Please check user name and password.") : this.setMessage("Sign-in failed. Unknown error."), Utility.hideScrim(), this.doLoginFailure({
+reason: e,
+userId: t
+});
+},
+cancelClick: function() {
+navigator.app.exitApp();
+},
+setMessage: function(e) {
+this.$.hpLoginMessage.setContent(e);
+}
+});
+
+// Utils.js
+
+hpLogin.Utils = {
+substringBetween: function(e, t, n) {
+if (e && t && n) {
+var r = e.indexOf(t);
+if (r >= 0) {
+var i = e.indexOf(n, r + t.length);
+if (i > 0) return e.substring(r + t.length, i);
+}
+}
+return "";
+},
+truncateSMSESSION: function(e) {
+return e && e.length > 8 ? e.substring(0, 8) + "..." + e.substring(e.length - 8) : e;
+},
+isNumeric: function(e) {
+return !isNaN(parseFloat(e)) && isFinite(e);
+},
+trim: function(e) {
+var t = e || "";
+return t.replace(/^\s+|\s+$/g, "");
+},
+isFunction: function(e) {
+var t = {};
+return e && t.toString.call(e) == "[object Function]";
+},
+isArray: function(e) {
+var t = {};
+return e && t.toString.call(e) == "[object Array]";
+},
+isString: function(e) {
+var t = {};
+return e && t.toString.call(e) == "[object String]";
+}
+};
+
+// AppUpdateNotification.js
+
+var AppUpdateNotification = {
+appId: "",
+appVersionNumber: "",
+osType: "",
+callbacks: "",
+env: "ITG",
+statusEnum: {
+APP_UPDATE_FOUND: "APP_UPDATE_FOUND",
+APP_UPDATE_NOT_FOUND: "APP_UPDATE_NOT_FOUND"
+},
+osTypeEnum: {
+IOS: "iOS",
+ANDROID: "Android"
+},
+hpCloudBaseURL_DEV: "https://region-a.geo-1.objects.hpcloudsvc.com/v1.0/25268642422485/${OSTYPE}_Enterprise_DEV",
+hpCloudBaseURL_ITG: "https://region-a.geo-1.objects.hpcloudsvc.com/v1.0/25268642422485/${OSTYPE}_Enterprise_ITG",
+hpCloudBaseURL_PRO: "https://region-a.geo-1.objects.hpcloudsvc.com/v1.0/10204248866104/${OSTYPE}_Enterprise",
+hpCloudBaseURL: "https://region-a.geo-1.objects.hpcloudsvc.com/v1.0/10204248866104/${OSTYPE}_Enterprise",
+getAppIdAndVersion: function(e) {
+var t = "getAppIdAndVersion - ";
+GetAppInfoPlugin.get(function(n) {
+console.log(t + "PhoneGap Plugin GetAppInfoPlugin success: " + n);
+var r = JSON.parse(n), i = r.appId || "", s = r.versionNumber || "";
+console.log(t + "appId=" + i + ", appVersionNumber=" + s), e && e.done && AppUpdateNotification._isFunction(e.done) && (console.log(t + "done --> call back: " + e.done), e.done("OK", i, s));
+}, function(n) {
+console.log(t + "PhoneGap Plugin GetAppInfoPlugin failure: " + n), e && e.done && AppUpdateNotification._isFunction(e.done) && e.done("FAILURE");
+});
+},
+checkUpdate: function(e, t, n, r) {
+this.appId = t || "", this.appVersionNumber = n || "", this.osType = this.osTypeEnum[(e || "").toUpperCase()], this.callbacks = r, this.appId && this.osType ? this._getVersionList() : this.callbacks && this.callbacks.done && this._isFunction(this.callbacks.done) && this.callbacks.done(this.statusEnum.APP_UPDATE_NOT_FOUND);
+},
+_getVersionList: function() {
+var e = {
+DEV: this.hpCloudBaseURL_DEV,
+ITG: this.hpCloudBaseURL_ITG,
+PRO: this.hpCloudBaseURL_PRO
+};
+this.hpCloudBaseURL = e[this.env] || this.hpCloudBaseURL, this.hpCloudBaseURL = this.hpCloudBaseURL.replace("${OSTYPE}", encodeURIComponent(this.osType));
+var t = this.hpCloudBaseURL + "_" + encodeURIComponent(this.appId) + "?path&format=json";
+hpLogin.logd("hpCloudAppURL=" + t), this._ajax.request({
+url: t,
+method: "GET",
+callback: {
+success: this._getVersionListSuccess,
+failure: this._getVersionListFailure
+}
+});
+},
+_getVersionListFailure: function(e, t) {
+var n = "AppUpdateNotification._getVersionListFailure - ";
+console.log(n + "inXhr.status=" + e.status + ", inXhr=" + JSON.stringify(e)), AppUpdateNotification.callbacks && AppUpdateNotification.callbacks.done && AppUpdateNotification._isFunction(AppUpdateNotification.callbacks.done) && (console.log(n + "done --> call back: " + AppUpdateNotification.callbacks.done), console.log(n + AppUpdateNotification.statusEnum.APP_UPDATE_NOT_FOUND), AppUpdateNotification.callbacks.done(AppUpdateNotification.statusEnum.APP_UPDATE_NOT_FOUND));
+},
+_getVersionListSuccess: function(e, t) {
+var n = "AppUpdateNotification._getVersionListSuccess - ";
+console.log(n + "inXhr.status=" + e.status + ", inXhr=" + JSON.stringify(e));
+var r = AppUpdateNotification._extractMaxVersionNumber(t);
+if (AppUpdateNotification.callbacks && AppUpdateNotification.callbacks.done && AppUpdateNotification._isFunction(AppUpdateNotification.callbacks.done)) {
+console.log(n + "done --> call back: " + AppUpdateNotification.callbacks.done);
+if (r == "NOT_FOUND") {
+console.log(n + "No valid version is found in hpcloud. " + AppUpdateNotification.statusEnum.APP_UPDATE_NOT_FOUND), AppUpdateNotification.callbacks.done(AppUpdateNotification.statusEnum.APP_UPDATE_NOT_FOUND);
+return;
+}
+var i = AppUpdateNotification._compareVersionNumbers(r, AppUpdateNotification.appVersionNumber);
+if (!AppUpdateNotification._isValidVersionNumber(AppUpdateNotification.appVersionNumber) || !isNaN(i) && i > 0) {
+console.log(n + "APP_UPDATE_FOUND --> The latest version is " + r);
+var s = "";
+AppUpdateNotification.osType === AppUpdateNotification.osTypeEnum.IOS ? s = "itms-services://?action=download-manifest&amp;url=" + AppUpdateNotification.hpCloudBaseURL + "_" + encodeURIComponent(AppUpdateNotification.appId) + "/" + r + "%2F" + encodeURIComponent(AppUpdateNotification.appId) + ".plist" : AppUpdateNotification.osType === AppUpdateNotification.osTypeEnum.ANDROID && (s = AppUpdateNotification.hpCloudBaseURL + "_" + encodeURIComponent(AppUpdateNotification.appId) + "/" + r + "/" + encodeURIComponent(AppUpdateNotification.appId) + ".apk"), console.log(n + AppUpdateNotification.statusEnum.APP_UPDATE_FOUND + " --> The installation URL is " + s), AppUpdateNotification.callbacks.done(AppUpdateNotification.statusEnum.APP_UPDATE_FOUND, r, s);
+} else console.log(n + AppUpdateNotification.statusEnum.APP_UPDATE_NOT_FOUND), AppUpdateNotification.callbacks.done(AppUpdateNotification.statusEnum.APP_UPDATE_NOT_FOUND);
+}
+},
+_extractMaxVersionNumber: function(e) {
+var t = "AppUpdateNotification._extractMaxVersionNumber() - ", n = [];
+try {
+n = JSON.parse(e);
+} catch (r) {
+console.log(t + "Response text is NOT valid JSON string.");
+}
+var i = "0";
+for (var s = 0, o = n.length; s < o; s++) {
+var u = n[s].name, a = u;
+u.indexOf("/") > 0 && (a = u.substring(0, u.length - 1)), console.log(t + "version number = " + a), AppUpdateNotification._isValidVersionNumber(a) && AppUpdateNotification._compareVersionNumbers(i, a) < 0 && (i = a);
+}
+return console.log(t + "maxVersionNumber=" + i), i == "0" ? "NOT_FOUND" : i;
+},
+_compareVersionNumbers: function(e, t) {
+var n = e.split("."), r = t.split(".");
+if (!AppUpdateNotification._isValidVersionNumber(e) || !AppUpdateNotification._isValidVersionNumber(t)) return NaN;
+for (var i = 0; i < n.length; ++i) {
+if (r.length === i) return 1;
+if (n[i] === r[i]) continue;
+return n[i] > r[i] ? 1 : -1;
+}
+return n.length != r.length ? -1 : 0;
+},
+_isValidVersionNumber: function(e) {
+var t = e.split(".");
+for (var n = 0; n < t.length; ++n) if (!AppUpdateNotification._isPositiveInteger(t[n])) return !1;
+return !0;
+},
+_isPositiveInteger: function(e) {
+return /^\d+$/.test(e);
+},
+_isFunction: function(e) {
+var t = {};
+return e && t.toString.call(e) == "[object Function]";
+},
+_isString: function(e) {
+var t = {};
+return e && t.toString.call(e) == "[object String]";
+},
+_isArray: function(e) {
+var t = {};
+return e && t.toString.call(e) == "[object Array]";
+},
+_ajax: {
+request: function(e) {
+var t = this._getXMLHttpRequest(), n = e.method || "GET";
+t.open(n, e.url, !0), this._makeReadyStateHandler(t, e.callback), t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+if (e.headers) for (var r in e.headers) t.setRequestHeader(r, e.headers[r]);
+return t.send(AppUpdateNotification._isString(e.body) ? e.body : this._objectToQuery(e.body) || null), t;
+},
+_getXMLHttpRequest: function() {
+try {
+return new XMLHttpRequest;
+} catch (e) {}
+try {
+return new ActiveXObject("Msxml2.XMLHTTP");
+} catch (e) {}
+try {
+return new ActiveXObject("Microsoft.XMLHTTP");
+} catch (e) {}
+return null;
+},
+_makeReadyStateHandler: function(e, t) {
+e.onreadystatechange = function() {
+if (e.readyState == 4) {
+var n = t.success, r = t.failure;
+AppUpdateNotification._ajax._isFailure(e) ? (console.log("_makeReadyStateHandler=> Failure"), r && AppUpdateNotification._isFunction(r) && r(e, e.responseText)) : (console.log("_makeReadyStateHandler=> Success"), n && AppUpdateNotification._isFunction(n) && n(e, e.responseText));
+}
+};
+},
+_objectToQuery: function(e) {
+var t = encodeURIComponent, n = [], r = {};
+for (var i in e) {
+var s = e[i];
+if (s != r[i]) {
+var o = t(i) + "=";
+if (AppUpdateNotification._isArray(s)) for (var u = 0; u < s.length; u++) n.push(o + t(s[u])); else n.push(o + t(s));
+}
+}
+return n.join("&");
+},
+_isFailure: function(e) {
+return e.status !== 0 && (e.status < 200 || e.status >= 300);
+}
+}
+}, GetAppInfoPlugin = {
+get: function(e, t) {
+return cordova.exec(e, t, "GetAppInfoPlugin", "get", []);
+}
+};

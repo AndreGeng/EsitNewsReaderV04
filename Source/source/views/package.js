@@ -2,5 +2,6 @@ enyo.depends(
 	"View.css",
 	"HomeView.js",
 	"DetailView.js",
-	"OffLineListView.js"
+	"OffLineListView.js",
+	"LoginView.js"
 );
