@@ -71,6 +71,8 @@ ViewLibrary = {
         if(this.isBackable()) {
             var index = this._history.pop();
             this._panels.setIndex(index);
+        } else {
+            navigator.app.exitApp();
         }
     }
 };

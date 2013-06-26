@@ -66,7 +66,7 @@ enyo.kind({
         }); 
 		document.addEventListener("backbutton", function(){
 			serialize(GlobalVar.offlinelist, "offlineList");
-			navigator.app.exitApp();
+			ViewLibrary.back();
 		}, false);
 	}
 });
